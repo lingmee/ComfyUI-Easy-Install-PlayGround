@@ -34,6 +34,7 @@ CURRENT_SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.normpath(os.path.join(CURRENT_SCRIPT_DIR, "..", "..", ".."))
 
 ICO_PATH = os.path.join(CURRENT_SCRIPT_DIR, "ComfyUI-EZi-Desktop.ico")
+TERMINAL_BG_PATH = os.path.join(CURRENT_SCRIPT_DIR, "ComfyUI-EZi-Terminal-BG.png")
 SETTINGS_PATH = os.path.join(CURRENT_SCRIPT_DIR, "ComfyUI-EZi.settings.json")
 
 APP_VERSION = "3.0.0"
@@ -142,6 +143,7 @@ def _load_settings():
         "window_maximized": False,
         "window_placement": None,
         "hide_deprecation_warnings": True,
+        "file_manager_path": "",
     }
     try:
         if os.path.exists(SETTINGS_PATH):
@@ -156,7 +158,7 @@ def _save_settings(settings):
     try:
         if not settings or not isinstance(settings, dict):
             return
-        ALLOWED = ("last_save_dir", "window_maximized", "comfy_storage", "hide_deprecation_warnings", "window_placement")
+        ALLOWED = ("last_save_dir", "window_maximized", "comfy_storage", "hide_deprecation_warnings", "file_manager_path", "window_placement")
         existing = {}
         try:
             if os.path.exists(SETTINGS_PATH):
@@ -210,7 +212,7 @@ SHELL_HTML = r"""<!DOCTYPE html>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #0c0e12; font-family: 'Consolas', 'Courier New', monospace;
+    background: #0c0e12; font-family: 'Consolas', 'Courier New', 'Segoe UI Symbol', monospace;
     font-size: 12px; color: #ccc; height: 100vh; display: flex;
     flex-direction: column; overflow: hidden;
   }
@@ -298,7 +300,7 @@ SHELL_HTML = r"""<!DOCTYPE html>
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: rgba(0,0,0,0.75); color: #f1fa8c; font-size: 11px;
     padding: 4px 12px; border-radius: 4px; pointer-events: none;
-    font-family: Consolas, monospace; white-space: nowrap;
+    font-family: "JetBrainsMono NFP", "JetBrainsMono Nerd Font", "JetBrains Mono", Consolas, monospace; white-space: nowrap;
     display: flex; align-items: center;
   }
   #panels { flex: 1; position: relative; overflow: hidden; background: #0c0e12; }
@@ -313,12 +315,17 @@ SHELL_HTML = r"""<!DOCTYPE html>
     white-space: pre-wrap; word-break: break-all;
   }
   #ico-bg {
-    pointer-events: none; position: absolute;
-    width: {ICO_W}px; height: {ICO_H}px;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     background-image: {ICO_BG};
-    background-repeat: no-repeat; background-size: {ICO_W}px {ICO_H}px;
-    opacity: 0.12; z-index: 6;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    opacity: 0.10;
+    z-index: 6;
   }
   #ui-panel { z-index: 1; opacity: 0; transform: translateX(100vw); pointer-events: none; }
   #ui-frame { width:100%; height:100%; border:none; }
@@ -414,7 +421,7 @@ const frame = document.getElementById('ui-frame');
 const icoBg = document.getElementById('ico-bg');
 let lastCR = null, uiLoaded = false, showingUI = false;
 
-const settingsDefaults = { hideDeprecationWarnings: true };
+const settingsDefaults = { hideDeprecationWarnings: true, fileManagerPath: "" };
 let eziSettings = Object.assign({}, settingsDefaults);
 function saveEziSettings() {
   try { pywebview.api.save_ui_settings(JSON.stringify(eziSettings)); } catch(e) {}
@@ -487,6 +494,10 @@ function show_settings() {
       <input type="checkbox" id="set-hide-deprecation" ${eziSettings.hideDeprecationWarnings ? 'checked' : ''}>
       <label for="set-hide-deprecation">Hide deprecation warnings in console</label>
     </div>
+    <div class="settings-row">
+      <label for="set-filemanager-path" style="cursor:default">File manager path</label>
+      <input id="set-filemanager-path" type="text" value="${(eziSettings.fileManagerPath || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}" placeholder="EXE path or folder" style="flex:1;background:#0d1117;color:#ccc;border:1px solid #30363d;border-radius:4px;font-family:inherit;font-size:11px;padding:3px 6px;min-width:0;">
+    </div>
     <div style="border-top:1px solid #21262d;margin:6px 0"></div>
     <div class="settings-row">
       <label for="set-comfy-ver" style="cursor:default">ComfyUI version</label>
@@ -503,9 +514,12 @@ function show_settings() {
   </div>`;
 
   let _initialHideDeprecation = eziSettings.hideDeprecationWarnings;
+  let _initialFileManagerPath = (eziSettings.fileManagerPath || '').trim();
 
   function _checkChanges() {
     const hideDepChanged = document.getElementById('set-hide-deprecation').checked !== _initialHideDeprecation;
+    const fmInput = document.getElementById('set-filemanager-path');
+    const fmChanged = !!fmInput && ((fmInput.value || '').trim() !== _initialFileManagerPath);
     const selComfy = document.getElementById('set-comfy-ver');
     const comfyChanged = selComfy && !selComfy.disabled && selComfy.dataset.current !== selComfy.value;
     const selFe = document.getElementById('set-frontend-ver');
@@ -513,7 +527,7 @@ function show_settings() {
 
     const applyBtn = Array.from(document.querySelectorAll('#modal-btns .modal-btn')).find(b => b.textContent.trim() === 'Apply');
     if (applyBtn) {
-      const hasChanges = hideDepChanged || comfyChanged || feChanged;
+      const hasChanges = hideDepChanged || fmChanged || comfyChanged || feChanged;
       applyBtn.disabled = !hasChanges;
       if (hasChanges) {
         applyBtn.classList.add('primary');
@@ -525,8 +539,15 @@ function show_settings() {
 
   function _applySettings() {
     const hideDepChanged = document.getElementById('set-hide-deprecation').checked !== _initialHideDeprecation;
+    const fmInput = document.getElementById('set-filemanager-path');
+    const newFileManagerPath = fmInput ? (fmInput.value || '').trim() : '';
+    const fmChanged = newFileManagerPath !== _initialFileManagerPath;
     eziSettings.hideDeprecationWarnings = document.getElementById('set-hide-deprecation').checked;
+    eziSettings.fileManagerPath = newFileManagerPath;
+    try { pywebview.api.print('\n[EZi Settings] Saving: ' + JSON.stringify(eziSettings) + '\n'); } catch(e) {}
     saveEziSettings();
+    _initialHideDeprecation = eziSettings.hideDeprecationWarnings;
+    _initialFileManagerPath = eziSettings.fileManagerPath;
     const selComfy = document.getElementById('set-comfy-ver');
     const comfyChanged = selComfy && !selComfy.disabled && selComfy.dataset.current !== selComfy.value;
     const selFe = document.getElementById('set-frontend-ver');
@@ -540,7 +561,7 @@ function show_settings() {
       pywebview.api.set_frontend_version(selFe.value);
     }
 
-    if (hideDepChanged || comfyChanged || feChanged) {
+    if (hideDepChanged || fmChanged || comfyChanged || feChanged) {
       document.getElementById('modal-overlay').classList.remove('active');
     }
   }
@@ -582,6 +603,8 @@ function show_settings() {
   setTimeout(() => {
     const depCheck = document.getElementById('set-hide-deprecation');
     if (depCheck) depCheck.addEventListener('change', _checkChanges);
+    const fmInput = document.getElementById('set-filemanager-path');
+    if (fmInput) fmInput.addEventListener('input', _checkChanges);
     const comfySel = document.getElementById('set-comfy-ver');
     if (comfySel) comfySel.addEventListener('change', _checkChanges);
     const feSel = document.getElementById('set-frontend-ver');
@@ -794,7 +817,7 @@ function retry() {
   btn.onclick = toggle;
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  ctx.font = '12px Consolas, "Courier New", monospace';
+  ctx.font = '12px "JetBrainsMono NFP", "JetBrainsMono Nerd Font", "JetBrains Mono", Consolas, monospace';
   const charW = ctx.measureText('M').width || 7.2;
   const style = window.getComputedStyle(term);
   const padL = parseFloat(style.paddingLeft) || 0;
@@ -1073,7 +1096,7 @@ function init_output_btn() {
 function send_columns() {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  ctx.font = '12px Consolas, "Courier New", monospace';
+  ctx.font = '12px "JetBrainsMono NFP", "JetBrainsMono Nerd Font", "JetBrains Mono", Consolas, monospace';
   const charW = ctx.measureText('M').width || 7.2;
   const style = window.getComputedStyle(term);
   const padL = parseFloat(style.paddingLeft) || 0;
@@ -1111,7 +1134,7 @@ window.addEventListener('resize', send_columns);
     (function() {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      ctx.font = '12px Consolas, "Courier New", monospace';
+      ctx.font = '12px "JetBrainsMono NFP", "JetBrainsMono Nerd Font", "JetBrains Mono", Consolas, monospace';
       const charW = ctx.measureText('M').width || 7.2;
       const style = window.getComputedStyle(term);
       const padL = parseFloat(style.paddingLeft) || 0;
@@ -1124,42 +1147,81 @@ window.addEventListener('resize', send_columns);
     init_output_btn();
   } else setTimeout(waitForApi, 30);
 })();
+
+window.addEventListener('message', function(event) {
+    // Прихващане на блокиран OAuth
+    if (event.data && event.data.type === 'ezi_oauth_blocked') {
+        showModal('⚠️ OAuth Login Unavailable', 
+            'Logging in with Google or GitHub is not supported in the desktop wrapper because the authentication popup disconnects from the app.<br><br>' +
+            'Please use the <b>ComfyUI API Key</b> or the standard <b>Email & Password</b> login option instead.',
+            [{ label: 'Got it', cls: 'primary', action: () => {} }]
+        );
+    }
+    
+    if (event.data && event.data.type === 'ezi_save_image') {
+        try {
+            pywebview.api.handle_comfyui_download(event.data.url, event.data.filename);
+        } catch(e) {}
+    }
+});
+
 </script>
 </body>
 </html>"""
 
 def _get_shell_html():
-    ico_css = ""
-    ico_w, ico_h = 256, 256
-    if os.path.exists(ICO_PATH):
+    bg_css = ""
+    bg_w, bg_h = 1024, 1024
+
+    bg_path = TERMINAL_BG_PATH if os.path.exists(TERMINAL_BG_PATH) else ICO_PATH
+
+    if os.path.exists(bg_path):
         try:
             from PIL import Image
             import io
-            with Image.open(ICO_PATH) as im:
+
+            with Image.open(bg_path) as im:
                 frames = []
                 try:
-                    for i in range(getattr(im, 'n_frames', 1)):
+                    for i in range(getattr(im, "n_frames", 1)):
                         im.seek(i)
                         frames.append((im.size[0] * im.size[1], im.copy()))
                 except EOFError:
                     pass
+
                 best = max(frames, key=lambda x: x[0])[1] if frames else im
-                ico_w, ico_h = best.size
+                bg_w, bg_h = best.size
+
                 buf = io.BytesIO()
                 best.convert("RGBA").save(buf, format="PNG")
                 b64 = base64.b64encode(buf.getvalue()).decode()
-            ico_css = f'url("data:image/png;base64,{b64}")'
+
+            bg_css = f'url("data:image/png;base64,{b64}")'
+
         except Exception:
             try:
-                with open(ICO_PATH, "rb") as _f:
-                    b64 = base64.b64encode(_f.read()).decode()
-                ico_css = f'url("data:image/x-icon;base64,{b64}")'
+                with open(bg_path, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode()
+
+                ext = os.path.splitext(bg_path)[1].lower()
+                mime = "image/png"
+                if ext in (".jpg", ".jpeg"):
+                    mime = "image/jpeg"
+                elif ext == ".webp":
+                    mime = "image/webp"
+                elif ext == ".ico":
+                    mime = "image/x-icon"
+
+                bg_css = f'url("data:{mime};base64,{b64}")'
             except Exception:
                 pass
-    return (SHELL_HTML
-            .replace("{ICO_BG}", ico_css)
-            .replace("{ICO_W}", str(ico_w))
-            .replace("{ICO_H}", str(ico_h)))
+
+    return (
+        SHELL_HTML
+        .replace("{ICO_BG}", bg_css)
+        .replace("{ICO_W}", str(bg_w))
+        .replace("{ICO_H}", str(bg_h))
+    )
 
 async def make_proxy_app(comfy_port_holder, storage_holder):
     async def handle_shell(request):
@@ -1201,6 +1263,34 @@ async def make_proxy_app(comfy_port_holder, storage_holder):
             if (data.ls) {{ Object.keys(data.ls).forEach(function(k) {{ try {{ localStorage.setItem(k, data.ls[k]); }} catch(e) {{}} }}); }}
             if (data.ss) {{ Object.keys(data.ss).forEach(function(k) {{ try {{ sessionStorage.setItem(k, data.ss[k]); }} catch(e) {{}} }}); }}
         }} catch(e) {{}}
+
+        // --- Intercept OAuth Popups ---
+        var _origOpen = window.open;
+        window.open = function(url, target, features) {{
+            if (url && (url.includes('google') || url.includes('github') || url.includes('/api/auth/signin'))) {{
+                // Notify the main shell that an OAuth popup was blocked
+                window.parent.postMessage({{ type: 'ezi_oauth_blocked' }}, '*');
+                return null; // Prevent the system browser from opening
+            }}
+            return _origOpen.call(this, url, target, features);
+        }};
+
+        // --- Intercept ComfyUI Image Downloads ---
+        var _origAClick = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function() {{
+            if (this.hasAttribute('download') && this.href) {{
+                try {{
+                    // Parse the URL to get the path and query string
+                    var urlObj = new URL(this.href, window.location.origin);
+                    var relativeUrl = urlObj.pathname + urlObj.search;
+                    var filename = this.getAttribute('download') || 'ComfyUI_image.png';
+                    
+                    window.parent.postMessage({{ type: 'ezi_save_image', url: relativeUrl, filename: filename }}, '*');
+                    return; // Блокираме стандартния браузър download
+                }} catch(e) {{}}
+            }}
+            return _origAClick.apply(this, arguments);
+        }};
     }})();
     </script>"""
                                 html = body.decode('utf-8', errors='replace')
@@ -1245,6 +1335,65 @@ class Api:
         if sys.platform == "win32":
             hwnd = ctypes.WinDLL('kernel32').GetConsoleWindow()
             if hwnd: ctypes.WinDLL('user32').ShowWindow(hwnd, 0)
+				
+    def handle_comfyui_download(self, url, filename):
+        """Triggered by JS when ComfyUI tries to save an image."""
+        threading.Thread(target=self._do_handle_download, args=(url, filename), daemon=True).start()
+
+    def _do_handle_download(self, url, filename):
+        """Fetch the media from the local server and show native Save Dialog."""
+        import urllib.request
+        port = self._comfy_port_holder[0]
+        if not port:
+            return
+
+        full_url = f"http://127.0.0.1:{port}{url}"
+        
+        try:
+            # 1. Изтегляме файла тихо от локалния сървър
+            req = urllib.request.Request(full_url)
+            with urllib.request.urlopen(req, timeout=15) as response:
+                file_data = response.read()
+            
+            if not self._window:
+                return
+
+            # 2. Определяме типа на файла за Windows Save Dialog филтъра
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in ('.mp4', '.webm', '.avi', '.mov', '.mkv'):
+                file_types = ("Video Files (*.mp4;*.webm;*.avi;*.mov;*.mkv)", "All Files (*.*)")
+            elif ext in ('.wav', '.mp3', '.ogg', '.flac', '.aac'):
+                file_types = ("Audio Files (*.wav;*.mp3;*.ogg;*.flac;*.aac)", "All Files (*.*)")
+            elif ext in ('.gif',):
+                file_types = ("GIF Image (*.gif)", "All Files (*.*)")
+            else:
+                # По подразбиране се предполага картинка (png, jpg, webp)
+                file_types = ("Image Files (*.png;*.jpg;*.jpeg;*.webp)", "All Files (*.*)")
+
+            # 3. Отваряме Nativния Windows Save Dialog с правилния филтър
+            save_path = None
+            try:
+                result = self._window.create_file_dialog(
+                    SAVE_DIALOG_TYPE,
+                    directory=self._last_save_dir,
+                    save_filename=filename,
+                    file_types=file_types
+                )
+                if result:
+                    save_path = result[0] if isinstance(result, (list, tuple)) else result
+                    self._last_save_dir = os.path.dirname(save_path)
+                    self._settings["last_save_dir"] = self._last_save_dir
+                    _save_settings(self._settings)
+            except Exception:
+                pass
+
+            # 4. Записваме файла на диска
+            if save_path:
+                with open(save_path, 'wb') as f:
+                    f.write(file_data)
+                    
+        except Exception as e:
+            self._println(f"[Save Media] Error: {e}\n")
 
     def confirm_close(self):
         if not self._updating:
@@ -1388,12 +1537,13 @@ class Api:
             if self._window:
                 result = self._window.evaluate_js(
                     "(function(){"
+                    "var t=document.getElementById('term-panel');"
+                    "if(!t) return 0;"
                     "var canvas=document.createElement('canvas');"
                     "var ctx=canvas.getContext('2d');"
-                    "ctx.font='12px Consolas,\"Courier New\",monospace';"
-                    "var charW=ctx.measureText('M').width||7.2;"
-                    "var t=document.getElementById('term-panel');"
                     "var style=window.getComputedStyle(t);"
+                    "ctx.font=style.font;"
+                    "var charW=ctx.measureText('M').width||7.2;"
                     "var padL=parseFloat(style.paddingLeft)||0;"
                     "var padR=parseFloat(style.paddingRight)||0;"
                     "var scrollbarW=Math.max(t.offsetWidth-t.clientWidth,17);"
@@ -2029,7 +2179,7 @@ class Api:
         self._println(f"\033[93m=== Running {name} ===\033[0m")
         try:
             proc = subprocess.Popen(
-                ['cmd', '/c', bat, 'NoPause'],
+                ['cmd', '/c', 'chcp', '65001', '>', 'nul', '&&', bat, 'NoPause'],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 cwd=os.path.dirname(bat),
                 creationflags=self._NO_WIN,
@@ -2059,6 +2209,20 @@ class Api:
         if not path:
             return
         try:
+            custom_fm = str(self._settings.get("file_manager_path", "") or "").strip()
+            self._println(f"[Output] file_manager_path={custom_fm}\n")
+            if custom_fm:
+                candidate = custom_fm
+                if os.path.isdir(candidate):
+                    for name in ("OneCommander.exe", "dopus.exe", "DirectoryOpus.exe", "explorer.exe", "TotalCommander64.exe", "Totalcmd64.exe"):
+                        probe = os.path.join(candidate, name)
+                        if os.path.isfile(probe):
+                            candidate = probe
+                            break
+                if os.path.isfile(candidate):
+                    subprocess.Popen([candidate, path])
+                    return
+                self._println(f"[Output] Custom file manager not found, falling back to Explorer: {custom_fm}\n")
             subprocess.Popen(['explorer', path])
         except Exception as e:
             self._println(f"[Output] Could not open folder: {e}\n")
@@ -2277,22 +2441,35 @@ class Api:
     def get_ui_settings(self):
         try:
             hide = self._settings.get("hide_deprecation_warnings", True)
-            return json.dumps({"hideDeprecationWarnings": hide})
-        except Exception:
+            file_manager = str(self._settings.get("file_manager_path", "") or "")
+            return json.dumps({"hideDeprecationWarnings": hide, "fileManagerPath": file_manager})
+        except Exception as e:
+            try:
+                self._println(f"[EZi Settings] get_ui_settings error: {e}\n")
+            except Exception:
+                pass
             return None
 
     def save_ui_settings(self, settings_json):
         try:
             if not settings_json or not isinstance(settings_json, str) or not settings_json.strip():
+                self._println("[EZi Settings] save_ui_settings skipped: empty payload\n")
                 return
             data = json.loads(settings_json)
             if not isinstance(data, dict) or not data:
+                self._println("[EZi Settings] save_ui_settings skipped: invalid dict\n")
                 return
             if "hideDeprecationWarnings" in data:
                 self._settings["hide_deprecation_warnings"] = bool(data["hideDeprecationWarnings"])
-                _save_settings(self._settings)
-        except Exception:
-            pass
+            if "fileManagerPath" in data:
+                self._settings["file_manager_path"] = str(data["fileManagerPath"] or "").strip()
+            self._println(f"[EZi Settings] Persisting file_manager_path={self._settings.get('file_manager_path','')}\n")
+            _save_settings(self._settings)
+        except Exception as e:
+            try:
+                self._println(f"[EZi Settings] save_ui_settings error: {e}\n")
+            except Exception:
+                pass
 
     def get_comfy_storage(self):
         return self._settings.get("comfy_storage", None)
