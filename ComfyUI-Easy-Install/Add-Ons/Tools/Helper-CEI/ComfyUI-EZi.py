@@ -415,7 +415,7 @@ SHELL_HTML = r"""<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div id="bar"><div id="dot"></div><span id="status">Starting...</span><div id="update-notice"><span id="update-msg" style="color:#f1fa8c;font-size:11px;font-weight:bold;">&#x2B06; ComfyUI update available</span><button id="update-btn" onclick="doUpdate()">Update ComfyUI</button></div><button id="btn" onclick="toggle()">ComfyUI ▶</button><button id="out-btn" onclick="pywebview.api.open_output_folder()" title="Open Output Folder">&#x1F4C2; Output</button><button id="models-btn" onclick="pywebview.api.open_models_folder()" title="Open Models Folder">🧮 Models</button><button id="nodes-btn" onclick="pywebview.api.open_custom_nodes_folder()" title="Open Custom Nodes Folder">🧩 Custom Nodes</button><button id="scr-btn" onclick="startCrop()" title="Screenshot">&#x1F4F7; Screenshot</button><button id="settings-btn" title="Settings">&#x2699;</button></div>
+<div id="bar"><div id="dot"></div><span id="status">Starting...</span><div id="update-notice"><span id="update-msg" style="color:#f1fa8c;font-size:11px;font-weight:bold;">&#x2B06; ComfyUI update available</span><button id="update-btn" onclick="doUpdate()">Update ComfyUI</button></div><button id="btn" onclick="toggle()">ComfyUI ▶</button><button id="out-btn" onclick="pywebview.api.open_output_folder()" title="Open Output Folder">&#x1F4C2; Output</button><button id="models-btn" onclick="pywebview.api.open_models_folder()" title="Open Models Folder">🧮 Models</button><button id="nodes-btn" onclick="handleNodesButton(event)" title="Open Custom Nodes Folder | Shift+Left Click: Open CMD here">🧩 Custom Nodes</button><button id="scr-btn" onclick="startCrop()" title="Screenshot">&#x1F4F7; Screenshot</button><button id="settings-btn" title="Settings">&#x2699;</button></div>
 <div id="crop-overlay"><div id="crop-shade-t"></div><div id="crop-shade-b"></div><div id="crop-shade-l"></div><div id="crop-shade-r"></div><div id="crop-sel"></div><div id="crop-hint">Click for full window &nbsp;|&nbsp; Drag to select area &nbsp;<button id="crop-cancel-btn" style="margin-left:8px;padding:2px 10px;font-family:inherit;font-size:11px;font-weight:bold;border:1px solid #ff5555;border-radius:4px;background:#6e2020;color:#fff;cursor:pointer;pointer-events:auto;vertical-align:middle;position:relative;top:2px;"><span style="position:relative;top:-1px;">✕</span> <span style="position:relative;top:-1px;">Cancel</span></button></div></div>
 <div id="panels">
   <div id="term-panel"></div>
@@ -1347,6 +1347,15 @@ function init_folder_buttons() {
   init_folder_button('check_custom_nodes_folder', 'nodes-btn');
 }
 
+function handleNodesButton(event) {
+  console.log("nodes click", { shift: event.shiftKey });
+  if (event.shiftKey) {
+    pywebview.api.open_nodes_cmd();
+  } else {
+    pywebview.api.open_custom_nodes_folder();
+  }
+}
+
 function send_columns() {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -2140,9 +2149,10 @@ class Api:
 
     def _resolve_custom_nodes_dir(self):
             for path in (
-                os.path.join(ROOT_DIR, "custom_nodes"),
                 os.path.join(ROOT_DIR, "ComfyUI", "custom_nodes"),
+                os.path.join(ROOT_DIR, "custom_nodes"),
             ):
+                path = os.path.normpath(path)
                 if os.path.isdir(path):
                     return path
             return None
@@ -2593,6 +2603,16 @@ class Api:
             subprocess.Popen(['explorer', path])
         except Exception as e:
             self._println(f"[Custom Nodes] Could not open folder: {e}\n")
+
+
+    def open_nodes_cmd(self):
+        path = self._resolve_custom_nodes_dir()
+        if not path:
+            return
+        try:
+            subprocess.Popen(["cmd.exe", "/k"], cwd=path)
+        except Exception as e:
+            self._println(f"[Custom Nodes] Could not open command prompt: {e}\n")
 
     def open_url(self, url):
         try:
