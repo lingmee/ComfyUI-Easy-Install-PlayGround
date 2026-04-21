@@ -210,65 +210,86 @@ SHELL_HTML = r"""<!DOCTYPE html>
 !function(e,t){if("function"==typeof define&&define.amd)define(["exports"],t);else if("object"==typeof exports&&"string"!=typeof exports.nodeName)t(exports);else{var n={};t(n),e.AnsiUp=n.default}}(this,(function(e){"use strict";var t,n=this&&this.__makeTemplateObject||function(e,t){return Object.defineProperty?Object.defineProperty(e,"raw",{value:t}):e.raw=t,e};!function(e){e[e.EOS=0]="EOS",e[e.Text=1]="Text",e[e.Incomplete=2]="Incomplete",e[e.ESC=3]="ESC",e[e.Unknown=4]="Unknown",e[e.SGR=5]="SGR",e[e.OSCURL=6]="OSCURL"}(t||(t={}));var i=function(){function e(){this.VERSION="5.2.1",this.setup_palettes(),this._use_classes=!1,this.bold=!1,this.italic=!1,this.underline=!1,this.fg=this.bg=null,this._buffer="",this._url_whitelist={http:1,https:1},this._escape_html=!0}return Object.defineProperty(e.prototype,"use_classes",{get:function(){return this._use_classes},set:function(e){this._use_classes=e},enumerable:!1,configurable:!0}),Object.defineProperty(e.prototype,"url_whitelist",{get:function(){return this._url_whitelist},set:function(e){this._url_whitelist=e},enumerable:!1,configurable:!0}),Object.defineProperty(e.prototype,"escape_html",{get:function(){return this._escape_html},set:function(e){this._escape_html=e},enumerable:!1,configurable:!0}),e.prototype.setup_palettes=function(){var e=this;this.ansi_colors=[[{rgb:[0,0,0],class_name:"ansi-black"},{rgb:[187,0,0],class_name:"ansi-red"},{rgb:[0,187,0],class_name:"ansi-green"},{rgb:[187,187,0],class_name:"ansi-yellow"},{rgb:[0,0,187],class_name:"ansi-blue"},{rgb:[187,0,187],class_name:"ansi-magenta"},{rgb:[0,187,187],class_name:"ansi-cyan"},{rgb:[255,255,255],class_name:"ansi-white"}],[{rgb:[85,85,85],class_name:"ansi-bright-black"},{rgb:[255,85,85],class_name:"ansi-bright-red"},{rgb:[0,255,0],class_name:"ansi-bright-green"},{rgb:[255,255,85],class_name:"ansi-bright-yellow"},{rgb:[85,85,255],class_name:"ansi-bright-blue"},{rgb:[255,85,255],class_name:"ansi-bright-magenta"},{rgb:[85,255,255],class_name:"ansi-bright-cyan"},{rgb:[255,255,255],class_name:"ansi-bright-white"}]],this.palette_256=[],this.ansi_colors.forEach((function(t){t.forEach((function(t){e.palette_256.push(t)}))}));for(var t=[0,95,135,175,215,255],n=0;n<6;++n)for(var i=0;i<6;++i)for(var s=0;s<6;++s){var r={rgb:[t[n],t[i],t[s]],class_name:"truecolor"};this.palette_256.push(r)}for(var a=8,l=0;l<24;++l,a+=10){var f={rgb:[a,a,a],class_name:"truecolor"};this.palette_256.push(f)}},e.prototype.escape_txt_for_html=function(e){return this._escape_html?e.replace(/[&<>"']/gm,(function(e){return"&"===e?"&amp;":"<"===e?"&lt;":">"===e?"&gt;":'"'===e?"&quot;":"'"===e?"&#x27;":void 0})):e},e.prototype.append_buffer=function(e){var t=this._buffer+e;this._buffer=t},e.prototype.get_next_packet=function(){var e={kind:t.EOS,text:"",url:""},i=this._buffer.length;if(0==i)return e;var r=this._buffer.indexOf("\x1b");if(-1==r)return e.kind=t.Text,e.text=this._buffer,this._buffer="",e;if(r>0)return e.kind=t.Text,e.text=this._buffer.slice(0,r),this._buffer=this._buffer.slice(r),e;if(0==r){if(i<3)return e.kind=t.Incomplete,e;var a=this._buffer.charAt(1);if("["!=a&&"]"!=a&&"("!=a)return e.kind=t.ESC,e.text=this._buffer.slice(0,1),this._buffer=this._buffer.slice(1),e;if("["==a){if(this._csi_regex||(this._csi_regex=s(n(["\n                        ^                           # beginning of line\n                                                    #\n                                                    # First attempt\n                        (?:                         # legal sequence\n                          \x1b[                      # CSI\n                          ([<-?]?)              # private-mode char\n                          ([d;]*)                    # any digits or semicolons\n                          ([ -/]?               # an intermediate modifier\n                          [@-~])                # the command\n                        )\n                        |                           # alternate (second attempt)\n                        (?:                         # illegal sequence\n                          \x1b[                      # CSI\n                          [ -~]*                # anything legal\n                          ([\0-\x1f:])              # anything illegal\n                        )\n                    "],["\n                        ^                           # beginning of line\n                                                    #\n                                                    # First attempt\n                        (?:                         # legal sequence\n                          \\x1b\\[                      # CSI\n                          ([\\x3c-\\x3f]?)              # private-mode char\n                          ([\\d;]*)                    # any digits or semicolons\n                          ([\\x20-\\x2f]?               # an intermediate modifier\n                          [\\x40-\\x7e])                # the command\n                        )\n                        |                           # alternate (second attempt)\n                        (?:                         # illegal sequence\n                          \\x1b\\[                      # CSI\n                          [\\x20-\\x7e]*                # anything legal\n                          ([\\x00-\\x1f:])              # anything illegal\n                        )\n                    "]))),null===(h=this._buffer.match(this._csi_regex)))return e.kind=t.Incomplete,e;if(h[4])return e.kind=t.ESC,e.text=this._buffer.slice(0,1),this._buffer=this._buffer.slice(1),e;""!=h[1]||"m"!=h[3]?e.kind=t.Unknown:e.kind=t.SGR,e.text=h[2];var l=h[0].length;return this._buffer=this._buffer.slice(l),e}if("]"==a){if(i<4)return e.kind=t.Incomplete,e;if("8"!=this._buffer.charAt(2)||";"!=this._buffer.charAt(3))return e.kind=t.ESC,e.text=this._buffer.slice(0,1),this._buffer=this._buffer.slice(1),e;this._osc_st||(this._osc_st=function(e){for(var t=[],n=1;n<arguments.length;n++)t[n-1]=arguments[n];var i=e.raw[0],s=/^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm,r=i.replace(s,"");return new RegExp(r,"g")}(n(["\n                        (?:                         # legal sequence\n                          (\x1b\\)                    # ESC \\\n                          |                           # alternate\n                          (\x07)                      # BEL (what xterm did)\n                        )\n                        |                           # alternate (second attempt)\n                        (                           # illegal sequence\n                          [\0-\x06]                 # anything illegal\n                          |                           # alternate\n                          [\b-\x1a]                 # anything illegal\n                          |                           # alternate\n                          [\x1c-\x1f]                 # anything illegal\n                        )\n                    "],["\n                        (?:                         # legal sequence\n                          (\\x1b\\\\)                    # ESC \\\\\n                          |                           # alternate\n                          (\\x07)                      # BEL (what xterm did)\n                        )\n                        |                           # alternate (second attempt)\n                        (                           # illegal sequence\n                          [\\x00-\\x06]                 # anything illegal\n                          |                           # alternate\n                          [\\x08-\\x1a]                 # anything illegal\n                          |                           # alternate\n                          [\\x1c-\\x1f]                 # anything illegal\n                        )\n                    "]))),this._osc_st.lastIndex=0;var f=this._osc_st.exec(this._buffer);if(null===f)return e.kind=t.Incomplete,e;if(f[3])return e.kind=t.ESC,e.text=this._buffer.slice(0,1),this._buffer=this._buffer.slice(1),e;var h,o=this._osc_st.exec(this._buffer);if(null===o)return e.kind=t.Incomplete,e;if(o[3])return e.kind=t.ESC,e.text=this._buffer.slice(0,1),this._buffer=this._buffer.slice(1),e;if(this._osc_regex||(this._osc_regex=s(n(["\n                        ^                           # beginning of line\n                                                    #\n                        \x1b]8;                    # OSC Hyperlink\n                        [ -:<-~]*       # params (excluding ;)\n                        ;                           # end of params\n                        ([!-~]{0,512})        # URL capture\n                        (?:                         # ST\n                          (?:\x1b\\)                  # ESC \\\n                          |                           # alternate\n                          (?:\x07)                    # BEL (what xterm did)\n                        )\n                        ([ -~]+)              # TEXT capture\n                        \x1b]8;;                   # OSC Hyperlink End\n                        (?:                         # ST\n                          (?:\x1b\\)                  # ESC \\\n                          |                           # alternate\n                          (?:\x07)                    # BEL (what xterm did)\n                        )\n                    "],["\n                        ^                           # beginning of line\n                                                    #\n                        \\x1b\\]8;                    # OSC Hyperlink\n                        [\\x20-\\x3a\\x3c-\\x7e]*       # params (excluding ;)\n                        ;                           # end of params\n                        ([\\x21-\\x7e]{0,512})        # URL capture\n                        (?:                         # ST\n                          (?:\\x1b\\\\)                  # ESC \\\\\n                          |                           # alternate\n                          (?:\\x07)                    # BEL (what xterm did)\n                        )\n                        ([\\x20-\\x7e]+)              # TEXT capture\n                        \\x1b\\]8;;                   # OSC Hyperlink End\n                        (?:                         # ST\n                          (?:\\x1b\\\\)                  # ESC \\\\\n                          |                           # alternate\n                          (?:\\x07)                    # BEL (what xterm did)\n                        )\n                    "]))),null===(h=this._buffer.match(this._osc_regex)))return e.kind=t.ESC,e.text=this._buffer.slice(0,1),this._buffer=this._buffer.slice(1),e;e.kind=t.OSCURL,e.url=h[1],e.text=h[2];l=h[0].length;return this._buffer=this._buffer.slice(l),e}if("("==a)return e.kind=t.Unknown,this._buffer=this._buffer.slice(3),e}},e.prototype.ansi_to_html=function(e){this.append_buffer(e);for(var n=[];;){var i=this.get_next_packet();if(i.kind==t.EOS||i.kind==t.Incomplete)break;i.kind!=t.ESC&&i.kind!=t.Unknown&&(i.kind==t.Text?n.push(this.transform_to_html(this.with_state(i))):i.kind==t.SGR?this.process_ansi(i):i.kind==t.OSCURL&&n.push(this.process_hyperlink(i)))}return n.join("")},e.prototype.with_state=function(e){return{bold:this.bold,italic:this.italic,underline:this.underline,fg:this.fg,bg:this.bg,text:e.text}},e.prototype.process_ansi=function(e){for(var t=e.text.split(";");t.length>0;){var n=t.shift(),i=parseInt(n,10);if(isNaN(i)||0===i)this.fg=this.bg=null,this.bold=!1,this.italic=!1,this.underline=!1;else if(1===i)this.bold=!0;else if(3===i)this.italic=!0;else if(4===i)this.underline=!0;else if(22===i)this.bold=!1;else if(23===i)this.italic=!1;else if(24===i)this.underline=!1;else if(39===i)this.fg=null;else if(49===i)this.bg=null;else if(i>=30&&i<38)this.fg=this.ansi_colors[0][i-30];else if(i>=40&&i<48)this.bg=this.ansi_colors[0][i-40];else if(i>=90&&i<98)this.fg=this.ansi_colors[1][i-90];else if(i>=100&&i<108)this.bg=this.ansi_colors[1][i-100];else if((38===i||48===i)&&t.length>0){var s=38===i,r=t.shift();if("5"===r&&t.length>0){var a=parseInt(t.shift(),10);a>=0&&a<=255&&(s?this.fg=this.palette_256[a]:this.bg=this.palette_256[a])}if("2"===r&&t.length>2){var l=parseInt(t.shift(),10),f=parseInt(t.shift(),10),h=parseInt(t.shift(),10);if(l>=0&&l<=255&&f>=0&&f<=255&&h>=0&&h<=255){var o={rgb:[l,f,h],class_name:"truecolor"};s?this.fg=o:this.bg=o}}}}},e.prototype.transform_to_html=function(e){var t=e.text;if(0===t.length)return t;if(t=this.escape_txt_for_html(t),!e.bold&&!e.italic&&!e.underline&&null===e.fg&&null===e.bg)return t;var n=[],i=[],s=e.fg,r=e.bg;e.bold&&n.push("font-weight:bold"),e.italic&&n.push("font-style:italic"),e.underline&&n.push("text-decoration:underline"),this._use_classes?(s&&("truecolor"!==s.class_name?i.push(s.class_name+"-fg"):n.push("color:rgb("+s.rgb.join(",")+")")),r&&("truecolor"!==r.class_name?i.push(r.class_name+"-bg"):n.push("background-color:rgb("+r.rgb.join(",")+")"))):(s&&n.push("color:rgb("+s.rgb.join(",")+")"),r&&n.push("background-color:rgb("+r.rgb+")"));var a="",l="";return i.length&&(a=' class="'+i.join(" ")+'"'),n.length&&(l=' style="'+n.join(";")+'"'),"<span"+l+a+">"+t+"</span>"},e.prototype.process_hyperlink=function(e){var t=e.url.split(":");return t.length<1?"":this._url_whitelist[t[0]]?'<a href="'+this.escape_txt_for_html(e.url)+'">'+this.escape_txt_for_html(e.text)+"</a>":""},e}();function s(e){for(var t=[],n=1;n<arguments.length;n++)t[n-1]=arguments[n];var i=e.raw[0].replace(/^\s+|\s+\n|\s*#[\s\S]*?\n|\n/gm,"");return new RegExp(i)}Object.defineProperty(e,"__esModule",{value:!0}),e.default=i}));
 </script>
 <style>
+:root {
+    --bar-bg: #181825;
+    --bar-border: #313244;
+    --panel-bg: #1e1e2e;
+    --panel-alt-bg: #181825;
+    --text-color: #cdd6f4;
+    --text-muted: #a6adc8;
+    --button-bg: #313244;
+    --button-border: #45475a;
+    --button-text: #cdd6f4;
+    --button-hover-bg: #45475a;
+    --button-hover-border: #585b70;
+    --primary-bg: #89b4fa;
+    --primary-border: #b4befe;
+    --primary-text: #1e1e2e;
+    --primary-hover-bg: #74c7ec;
+    --primary-hover-border: #89dceb;
+    --success-color: #a6e3a1;
+    --warning-color: #f9e2af;
+    --danger-color: #f38ba8;
+}
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #0c0e12; font-family: 'Consolas', 'Courier New', 'Segoe UI Symbol', monospace;
+    background: var(--panel-bg); font-family: "JetBrainsMono NFP", "JetBrainsMono Nerd Font", "JetBrains Mono", 'Consolas', 'Courier New', 'Segoe UI Symbol', monospace;
     font-size: 12px; color: #ccc; height: 100vh; display: flex;
     flex-direction: column; overflow: hidden;
   }
   #bar {
-    display: flex; align-items: center; background: #161b22;
-    border-bottom: 1px solid #21262d; padding: 0 10px; height: 32px;
+    display: flex; align-items: center; background: var(--bar-bg);
+    border-bottom: 1px solid var(--bar-bg); padding: 0 10px; height: 32px;
     flex-shrink: 0; user-select: none; gap: 8px; z-index: 100000;
     position: relative;
   }
   #dot { width: 8px; height: 8px; border-radius: 50%; background: #f1fa8c; animation: pulse 1.5s infinite; }
   #dot.ready { background: #50fa7b; animation: none; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
-  #status { color: #8b949e; font-size: 11px; }
+  #status { color: var(--text-muted); font-size: 11px; }
   #btn {
     padding: 3px 14px; font-family: inherit; font-size: 11px; font-weight: bold;
-    border: 1px solid #30363d; border-radius: 4px; background: #21262d; color: #8b949e;
+    border: 1px solid var(--button-border); border-radius: 4px; background: var(--button-bg); color: var(--button-text);
     cursor: default; transition: all .2s; order: -1; margin-right: 4px;
     line-height: 1; pointer-events: none;
   }
   #btn.active {
-    border-color: #388bfd; background: #0d419d; color: #fff;
+    border-color: var(--primary-border); background: var(--primary-bg); color: var(--primary-text);
     cursor: pointer; pointer-events: auto;
   }
-  #btn.active:hover { background:#1158c7; border-color:#58a6ff; }
+  #btn.active:hover { background: var(--primary-hover-bg); border-color: var(--primary-hover-border); }
   #update-btn {
     padding: 3px 12px; font-family: inherit; font-size: 11px; font-weight: bold;
-    border: 1px solid #f1fa8c; border-radius: 4px; background: #5a4a00; color: #f1fa8c;
+    border: 1px solid var(--warning-color); border-radius: 4px; background: color-mix(in srgb, var(--warning-color) 20%, var(--bar-bg)); color: var(--warning-color);
     cursor: pointer; transition: all .2s; line-height: 1; letter-spacing: 0.5px;
   }
-  #update-btn:hover { background:#7a6500; border-color:#fff; color:#fff; }
+  #update-btn:hover { background: var color-mix(in srgb, var(--warning-color) 40%, var(--bar-bg)); border-color: var(--text-color); color: var(--text-color); }
   #scr-btn {
     padding: 3px 10px; font-family: inherit; font-size: 11px; font-weight: bold;
-    border: 1px solid #388bfd; border-radius: 4px; background: #0d419d; color: #fff;
+    border: 1px solid var(--primary-border); border-radius: 4px; background: var(--primary-bg); color: var(--primary-text);
     cursor: pointer; transition: all .2s;
     line-height: 1; letter-spacing: 0.5px;
   }
-  #out-btn {
+  #out-btn, #models-btn, #nodes-btn {
     padding: 3px 10px; font-family: inherit; font-size: 11px; font-weight: bold;
-    border: 1px solid #30363d; border-radius: 4px; background: #21262d; color: #8b949e;
+    border: 1px solid var(--button-border); border-radius: 4px; background: var(--button-bg); color: var(--button-text);
     cursor: pointer; transition: all .2s;
     line-height: 1; letter-spacing: 0.5px;
   }
-  #out-btn:hover { background: #2d333b; border-color: #484f58; color: #ccc; }
+  #out-btn:hover, #models-btn:hover, #nodes-btn:hover { background: var(--button-hover-bg); border-color: var(--button-border); color: var(--text-color); }
   #update-notice {
     position: absolute; left: 50%; transform: translateX(-50%);
     display: none; align-items: center; gap: 8px;
   }
-  #out-btn { margin-left: auto; display: none; }
-  #out-btn.visible { display: inline-block; }
-  #scr-btn:hover { background:#1158c7; border-color:#58a6ff; }
+  #out-btn { margin-left: auto; }
+  #out-btn.visible, #models-btn.visible, #nodes-btn.visible { display: inline-block; }
+  #scr-btn:hover { background: var(--primary-hover-bg); border-color: var(--primary-hover-border); }
   #settings-btn {
     padding: 3px 8px; font-family: inherit; font-size: 13px; font-weight: bold;
-    border: 1px solid #30363d; border-radius: 4px; background: #21262d; color: #8b949e;
+    border: 1px solid var(--button-border); border-radius: 4px; background: var(--button-bg); color: var(--button-text);
     cursor: pointer; transition: all .2s; line-height: 1;
   }
-  #settings-btn:hover { background: #2d333b; border-color: #484f58; color: #ccc; }
+  #settings-btn:hover { background: var(--button-hover-bg); border-color: var(--button-hover-border); color: var(--text-color); }
   .settings-row {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 0; border-bottom: 1px solid #21262d;
@@ -303,14 +324,14 @@ SHELL_HTML = r"""<!DOCTYPE html>
     font-family: "JetBrainsMono NFP", "JetBrainsMono Nerd Font", "JetBrains Mono", Consolas, monospace; white-space: nowrap;
     display: flex; align-items: center;
   }
-  #panels { flex: 1; position: relative; overflow: hidden; background: #0c0e12; }
+  #panels { flex: 1; position: relative; overflow: hidden; background: var(--panel-bg); }
   #term-panel, #ui-panel {
     position: absolute; inset: 0;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-    background: #0c0e12;
+    background: var(--panel-bg);
   }
-  #term-panel { 
-    z-index: 5; overflow-y: auto; padding: 10px 14px; 
+  #term-panel {
+    z-index: 5; overflow-y: auto; padding: 10px 14px;
     user-select: text !important; transform: translateX(0); opacity: 1;
     white-space: pre-wrap; word-break: break-all;
   }
@@ -337,7 +358,7 @@ SHELL_HTML = r"""<!DOCTYPE html>
   }
   #modal-overlay.active { display: flex; }
   #modal-box {
-    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    background: var(--panel-alt-bg); border: 1px solid var(--button-border); border-radius: 10px;
     padding: 22px 24px 18px; min-width: 320px; max-width: 480px;
     max-height: 90vh; overflow-y: auto;
     box-shadow: 0 8px 32px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 12px;
@@ -350,14 +371,14 @@ SHELL_HTML = r"""<!DOCTYPE html>
   #modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
   .modal-btn {
     padding: 5px 18px; font-family: inherit; font-size: 11px; font-weight: bold;
-    border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #8b949e;
+    border-radius: 6px; border: 1px solid var(--button-border); background: var(--button-bg); color: var(--button-text);
     cursor: pointer; transition: all .15s; line-height: 1.4;
   }
-  .modal-btn:hover { background: #2d333b; color: #ccc; border-color: #484f58; }
-  .modal-btn.primary { background: #0d419d; border-color: #388bfd; color: #fff; }
-  .modal-btn.primary:hover { background: #1158c7; border-color: #58a6ff; }
-  .modal-btn.danger { background: #6e2020; border-color: #ff5555; color: #fff; }
-  .modal-btn.danger:hover { background: #8a2a2a; border-color: #ff7070; }
+  .modal-btn:hover { background: var(--button-hover-bg); color: var(--text-color); border-color: var(--button-hover-border); }
+  .modal-btn.primary { background: var(--primary-bg); border-color: var(--primary-border); color: var(--primary-text); }
+  .modal-btn.primary:hover { background: var(--primary-hover-bg); border-color: var(--primary-hover-border); }
+  .modal-btn.danger { background: color-mix(in srgb, var(--danger-color) 35%, var(--panel-bg)); border-color: var(--danger-color); color: var(--text-color); }
+  .modal-btn.danger:hover { background: var(--danger-hover-bg); border-color: var(--danger-hover-border); }
   .stab-btn {
     padding: 4px 14px; font-family: inherit; font-size: 11px; font-weight: bold;
     border: 1px solid #30363d; border-radius: 4px; background: #21262d; color: #8b949e;
@@ -394,7 +415,7 @@ SHELL_HTML = r"""<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div id="bar"><div id="dot"></div><span id="status">Starting...</span><div id="update-notice"><span id="update-msg" style="color:#f1fa8c;font-size:11px;font-weight:bold;">&#x2B06; ComfyUI update available</span><button id="update-btn" onclick="doUpdate()">Update ComfyUI</button></div><button id="btn" onclick="toggle()">ComfyUI ▶</button><button id="out-btn" onclick="pywebview.api.open_output_folder()" title="Open Output Folder">&#x1F4C2; Output</button><button id="scr-btn" onclick="startCrop()" title="Screenshot">&#x1F4F7; Screenshot</button><button id="settings-btn" title="Settings">&#x2699;</button></div>
+<div id="bar"><div id="dot"></div><span id="status">Starting...</span><div id="update-notice"><span id="update-msg" style="color:#f1fa8c;font-size:11px;font-weight:bold;">&#x2B06; ComfyUI update available</span><button id="update-btn" onclick="doUpdate()">Update ComfyUI</button></div><button id="btn" onclick="toggle()">ComfyUI ▶</button><button id="out-btn" onclick="pywebview.api.open_output_folder()" title="Open Output Folder">&#x1F4C2; Output</button><button id="models-btn" onclick="pywebview.api.open_models_folder()" title="Open Models Folder">🧮 Models</button><button id="nodes-btn" onclick="pywebview.api.open_custom_nodes_folder()" title="Open Custom Nodes Folder">🧩 Custom Nodes</button><button id="scr-btn" onclick="startCrop()" title="Screenshot">&#x1F4F7; Screenshot</button><button id="settings-btn" title="Settings">&#x2699;</button></div>
 <div id="crop-overlay"><div id="crop-shade-t"></div><div id="crop-shade-b"></div><div id="crop-shade-l"></div><div id="crop-shade-r"></div><div id="crop-sel"></div><div id="crop-hint">Click for full window &nbsp;|&nbsp; Drag to select area &nbsp;<button id="crop-cancel-btn" style="margin-left:8px;padding:2px 10px;font-family:inherit;font-size:11px;font-weight:bold;border:1px solid #ff5555;border-radius:4px;background:#6e2020;color:#fff;cursor:pointer;pointer-events:auto;vertical-align:middle;position:relative;top:2px;"><span style="position:relative;top:-1px;">✕</span> <span style="position:relative;top:-1px;">Cancel</span></button></div></div>
 <div id="panels">
   <div id="term-panel"></div>
@@ -421,37 +442,153 @@ const frame = document.getElementById('ui-frame');
 const icoBg = document.getElementById('ico-bg');
 let lastCR = null, uiLoaded = false, showingUI = false;
 
-const settingsDefaults = { hideDeprecationWarnings: true, fileManagerPath: "" };
+const settingsDefaults = {
+    hideDeprecationWarnings: true,
+    fileManagerPath: "",
+    themeName: "catppuccin-mocha",
+    themeColors: {
+        barBg: "#181825",
+        barBorder: "#313244",
+        panelBg: "#1e1e2e",
+        panelAltBg: "#181825",
+        text: "#cdd6f4",
+        textMuted: "#a6adc8",
+        buttonBg: "#313244",
+        buttonBorder: "#45475a",
+        buttonText: "#cdd6f4",
+        buttonHoverBg: "#45475a",
+        buttonHoverBorder: "#585b70",
+        primaryBg: "#89b4fa",
+        primaryBorder: "#b4befe",
+        primaryText: "#1e1e2e",
+        primaryHoverBg: "#74c7ec",
+        primaryHoverBorder: "#89dceb",
+        success: "#a6e3a1",
+        warning: "#f9e2af",
+        danger: "#f38ba8"
+    }
+};
 let eziSettings = Object.assign({}, settingsDefaults);
 function saveEziSettings() {
   try { pywebview.api.save_ui_settings(JSON.stringify(eziSettings)); } catch(e) {}
 }
+const mochaPalette = {
+  rosewater: "#f5e0dc",
+  flamingo: "#f2cdcd",
+  pink: "#f5c2e7",
+  mauve: "#cba6f7",
+  red: "#f38ba8",
+  maroon: "#eba0ac",
+  peach: "#fab387",
+  yellow: "#f9e2af",
+  green: "#a6e3a1",
+  teal: "#94e2d5",
+  sky: "#89dceb",
+  sapphire: "#74c7ec",
+  blue: "#89b4fa",
+  lavender: "#b4befe",
+  text: "#cdd6f4",
+  subtext1: "#bac2de",
+  subtext0: "#a6adc8",
+  overlay2: "#9399b2",
+  overlay1: "#7f849c",
+  overlay0: "#6c7086",
+  surface2: "#585b70",
+  surface1: "#45475a",
+  surface0: "#313244",
+  base: "#1e1e2e",
+  mantle: "#181825",
+  crust: "#11111b"
+};
+
+function mergeThemeColors(saved) {
+    return Object.assign({}, settingsDefaults.themeColors, saved || {});
+}
+
+function applyTheme(theme) {
+    const t = mergeThemeColors(theme);
+    eziSettings.themeColors = t;
+
+    const root = document.documentElement;
+    root.style.setProperty("--bar-bg", t.barBg);
+    root.style.setProperty("--bar-border", t.barBorder);
+    root.style.setProperty("--panel-bg", t.panelBg);
+    root.style.setProperty("--panel-alt-bg", t.panelAltBg);
+    root.style.setProperty("--text-color", t.text);
+    root.style.setProperty("--text-muted", t.textMuted);
+    root.style.setProperty("--button-bg", t.buttonBg);
+    root.style.setProperty("--button-border", t.buttonBorder);
+    root.style.setProperty("--button-text", t.buttonText);
+    root.style.setProperty("--button-hover-bg", t.buttonHoverBg);
+    root.style.setProperty("--button-hover-border", t.buttonHoverBorder);
+    root.style.setProperty("--primary-bg", t.primaryBg);
+    root.style.setProperty("--primary-border", t.primaryBorder);
+    root.style.setProperty("--primary-text", t.primaryText);
+    root.style.setProperty("--primary-hover-bg", t.primaryHoverBg);
+    root.style.setProperty("--primary-hover-border", t.primaryHoverBorder);
+    root.style.setProperty("--success-color", t.success);
+    root.style.setProperty("--warning-color", t.warning);
+    root.style.setProperty("--danger-color", t.danger);
+}
+
+function resetThemeToMocha() {
+    eziSettings.themeName = "catppuccin-mocha";
+    eziSettings.themeColors = mergeThemeColors(settingsDefaults.themeColors);
+    applyTheme(eziSettings.themeColors);
+}
+applyTheme(settingsDefaults.themeColors);
 
 function show_settings() {
   function _sysRow(label, value, color) {
     return `<tr><td style="color:#8b949e;padding:2px 10px 2px 0;white-space:nowrap">${label}</td>` +
-           `<td style="color:${color||'#f1fa8c'};font-weight:bold">${value}</td></tr>`;
+           `<td style="color:${color||'#f1fa8c'};font-weight:bold<">${value}</td></tr>`;
   }
   function _sysRowColor(label, value, color) { return _sysRow(label, value, color); }
 
-  function _showTab(name) {
-    ['general','addons','advanced'].forEach(t => {
-      document.getElementById('stab-'+t).style.display = (t===name)?'block':'none';
-      document.getElementById('stabtn-'+t).classList.toggle('active', t===name);
-    });
-  }
+  function escAttr(s) {
+    return String(s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
-  const tabBar = `<div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid #21262d;padding-bottom:8px">
+function colorInputRow(label, key) {
+    const value = (eziSettings.themeColors && eziSettings.themeColors[key]) || settingsDefaults.themeColors[key] || "#000000";
+    return `
+    <div class="settings-row">
+        <label for="theme-${key}" style="cursor:default">${label}</label>
+        <input id="theme-${key}" data-theme-key="${key}" type="color" value="${escAttr(value)}"
+               style="width:42px;height:24px;background:transparent;border:1px solid var(--button-border);border-radius:4px;cursor:pointer;">
+        <input data-theme-text="${key}" type="text" value="${escAttr(value)}"
+               style="width:96px;background:var(--panel-bg);color:var(--text-color);border:1px solid var(--button-border);border-radius:4px;font-family:inherit;font-size:11px;padding:3px 6px;">
+    </div>`;
+}
+
+function paletteSwatch(name, value) {
+    return `
+    <button type="button" class="mocha-swatch" data-color="${value}" title="${name} ${value}"
+            style="width:22px;height:22px;border-radius:6px;border:1px solid var(--button-border);background:${value};cursor:pointer;">
+    </button>`;
+}
+
+  function _showTab(name) {
+    ["general", "addons", "advanced", "theme"].forEach(function(t) {
+        const tab = document.getElementById("stab-" + t);
+        const btn = document.getElementById("stabtn-" + t);
+        if (tab) tab.style.display = (t === name ? "block" : "none");
+        if (btn) btn.classList.toggle("active", t === name);
+    });
+}
+
+  const tabBar = `<div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--bar-border);padding-bottom:8px">
     <button id="stabtn-general"  class="stab-btn active">General</button>
     <button id="stabtn-addons"   class="stab-btn">Add-ons</button>
     <button id="stabtn-advanced" class="stab-btn">Advanced</button>
+    <button id="stabtn-theme"    class="stab-btn">Theme</button>
   </div>`;
 
   const tabGeneral = `<div id="stab-general">
     <div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #21262d;">
-      <a href="#" onclick="event.preventDefault(); pywebview.api.open_url('https://github.com/Tavris1/ComfyUI-Easy-Install')" 
+      <a href="#" onclick="event.preventDefault(); pywebview.api.open_url('https://github.com/Tavris1/ComfyUI-Easy-Install')"
          style="color:#58a6ff; font-size:11px; text-decoration:none; font-weight:bold; word-break:break-all;"
-         onmouseover="this.style.textDecoration='underline'" 
+         onmouseover="this.style.textDecoration='underline'"
          onmouseout="this.style.textDecoration='none'">
          https://github.com/Tavris1/ComfyUI-Easy-Install
       </a>
@@ -513,8 +650,48 @@ function show_settings() {
     </div>
   </div>`;
 
+  const tabTheme = `
+<div id="stab-theme" style="display:none">
+    <div style="margin-bottom:10px;">
+        <div style="color:var(--warning-color);font-size:11px;font-weight:bold;margin-bottom:6px;">Catppuccin Mocha palette</div>
+        <div id="mocha-palette" style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${Object.entries(mochaPalette).map(([name, value]) => paletteSwatch(name, value)).join("")}
+        </div>
+        <div style="color:var(--text-muted);font-size:10px;margin-top:6px;">
+            Click a swatch, then click a color field below to assign it.
+        </div>
+    </div>
+
+    <div style="border-top:1px solid var(--bar-border);margin:8px 0 10px 0;"></div>
+
+    ${colorInputRow("Top bar background", "barBg")}
+    ${colorInputRow("Top bar border", "barBorder")}
+    ${colorInputRow("Main panel background", "panelBg")}
+    ${colorInputRow("Modal / alt background", "panelAltBg")}
+    ${colorInputRow("Main text", "text")}
+    ${colorInputRow("Muted text", "textMuted")}
+    ${colorInputRow("Button background", "buttonBg")}
+    ${colorInputRow("Button border", "buttonBorder")}
+    ${colorInputRow("Button text", "buttonText")}
+    ${colorInputRow("Button hover background", "buttonHoverBg")}
+    ${colorInputRow("Button hover border", "buttonHoverBorder")}
+    ${colorInputRow("Primary background", "primaryBg")}
+    ${colorInputRow("Primary border", "primaryBorder")}
+    ${colorInputRow("Primary text", "primaryText")}
+    ${colorInputRow("Primary hover background", "primaryHoverBg")}
+    ${colorInputRow("Primary hover border", "primaryHoverBorder")}
+    ${colorInputRow("Success", "success")}
+    ${colorInputRow("Warning", "warning")}
+    ${colorInputRow("Danger", "danger")}
+
+    <div style="display:flex;gap:8px;margin-top:12px;">
+        <button type="button" id="theme-reset-mocha" class="modal-btn">Reset to Mocha</button>
+    </div>
+</div>`;
+
   let _initialHideDeprecation = eziSettings.hideDeprecationWarnings;
   let _initialFileManagerPath = (eziSettings.fileManagerPath || '').trim();
+  let _initialThemeColors = JSON.stringify(mergeThemeColors(eziSettings.themeColors));
 
   function _checkChanges() {
     const hideDepChanged = document.getElementById('set-hide-deprecation').checked !== _initialHideDeprecation;
@@ -524,10 +701,11 @@ function show_settings() {
     const comfyChanged = selComfy && !selComfy.disabled && selComfy.dataset.current !== selComfy.value;
     const selFe = document.getElementById('set-frontend-ver');
     const feChanged = selFe && !selFe.disabled && selFe.dataset.current !== selFe.value;
+    const themeChanged = JSON.stringify(mergeThemeColors(eziSettings.themeColors)) !== _initialThemeColors;
 
     const applyBtn = Array.from(document.querySelectorAll('#modal-btns .modal-btn')).find(b => b.textContent.trim() === 'Apply');
     if (applyBtn) {
-      const hasChanges = hideDepChanged || fmChanged || comfyChanged || feChanged;
+      const hasChanges = hideDepChanged || fmChanged || comfyChanged || feChanged || themeChanged;
       applyBtn.disabled = !hasChanges;
       if (hasChanges) {
         applyBtn.classList.add('primary');
@@ -544,10 +722,14 @@ function show_settings() {
     const fmChanged = newFileManagerPath !== _initialFileManagerPath;
     eziSettings.hideDeprecationWarnings = document.getElementById('set-hide-deprecation').checked;
     eziSettings.fileManagerPath = newFileManagerPath;
+    eziSettings.themeName = "custom-mocha";
+    eziSettings.themeColors = mergeThemeColors(eziSettings.themeColors);
     try { pywebview.api.print('\n[EZi Settings] Saving: ' + JSON.stringify(eziSettings) + '\n'); } catch(e) {}
     saveEziSettings();
     _initialHideDeprecation = eziSettings.hideDeprecationWarnings;
     _initialFileManagerPath = eziSettings.fileManagerPath;
+    _initialThemeColors = JSON.stringify(mergeThemeColors(eziSettings.themeColors));
+
     const selComfy = document.getElementById('set-comfy-ver');
     const comfyChanged = selComfy && !selComfy.disabled && selComfy.dataset.current !== selComfy.value;
     const selFe = document.getElementById('set-frontend-ver');
@@ -567,20 +749,84 @@ function show_settings() {
   }
 
   showModal('\u2699\uFE0F', 'Settings',
-    `<div style="min-width:400px">${tabBar}${tabGeneral}${tabAddons}${tabAdvanced}</div>`,
+    `<div style="min-width:430px">${tabBar}${tabGeneral}${tabAddons}${tabAdvanced}${tabTheme}</div>`,
     [
       { label: 'Apply', cls: 'primary', noClose: true, action: _applySettings },
       { label: 'Close', cls: '', action: () => {} },
     ]
   );
 
-  ['general','addons','advanced'].forEach(t => {
+  ['general','addons','advanced','theme'].forEach(t => {
     const btn = document.getElementById('stabtn-'+t);
     if (btn) btn.addEventListener('click', () => {
       _showTab(t);
       _updateModalBtns(t);
     });
   });
+
+  let selectedMochaColor = null;
+
+document.querySelectorAll(".mocha-swatch").forEach(function(el) {
+    el.addEventListener("click", function() {
+        selectedMochaColor = el.dataset.color;
+        document.querySelectorAll(".mocha-swatch").forEach(function(s) {
+            s.style.outline = "";
+            s.style.outlineOffset = "";
+        });
+        el.style.outline = "2px solid var(--text-color)";
+        el.style.outlineOffset = "1px";
+    });
+});
+
+document.querySelectorAll("input[data-theme-key]").forEach(function(input) {
+    const key = input.dataset.themeKey;
+    input.addEventListener("input", function() {
+        eziSettings.themeColors[key] = input.value;
+        const txt = document.querySelector('input[data-theme-text="' + key + '"]');
+        if (txt) txt.value = input.value;
+        applyTheme(eziSettings.themeColors);
+        _checkChanges();
+    });
+    input.addEventListener("click", function() {
+        if (selectedMochaColor) {
+            input.value = selectedMochaColor;
+            eziSettings.themeColors[key] = selectedMochaColor;
+            const txt = document.querySelector('input[data-theme-text="' + key + '"]');
+            if (txt) txt.value = selectedMochaColor;
+            applyTheme(eziSettings.themeColors);
+            _checkChanges();
+        }
+    });
+});
+
+document.querySelectorAll("input[data-theme-text]").forEach(function(input) {
+    const key = input.dataset.themeText;
+    input.addEventListener("input", function() {
+        const v = input.value.trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+            eziSettings.themeColors[key] = v;
+            const color = document.querySelector('input[data-theme-key="' + key + '"]');
+            if (color) color.value = v;
+            applyTheme(eziSettings.themeColors);
+            _checkChanges();
+        }
+    });
+});
+
+const resetBtn = document.getElementById("theme-reset-mocha");
+if (resetBtn) {
+    resetBtn.addEventListener("click", function() {
+        resetThemeToMocha();
+        document.querySelectorAll("input[data-theme-key]").forEach(function(input) {
+            const key = input.dataset.themeKey;
+            const value = eziSettings.themeColors[key];
+            input.value = value;
+            const txt = document.querySelector('input[data-theme-text="' + key + '"]');
+            if (txt) txt.value = value;
+        });
+        _checkChanges();
+    });
+}
 
   function _updateModalBtns(tabName) {
     const applyBtn = Array.from(document.querySelectorAll('#modal-btns .modal-btn')).find(b => b.textContent.trim() === 'Apply');
@@ -669,10 +915,10 @@ function show_settings() {
       });
     };
     btns.insertBefore(copyBtn, btns.firstChild);
-    const activeTab = ['general','addons','advanced'].find(t => {
-      const el = document.getElementById('stab-'+t);
-      return el && el.style.display !== 'none';
-    }) || 'general';
+    const activeTab = ["general", "addons", "advanced", "theme"].find(function(t) {
+        const el = document.getElementById("stab-" + t);
+        return el && el.style.display !== "none";
+}) || "general";
     _updateModalBtns(activeTab);
   }).catch(function() {
     clearInterval(_pulse);
@@ -881,22 +1127,22 @@ function _saveTabsToDisk() {
   try {
     var f = document.getElementById('ui-frame');
     var out = { ls: {}, ss: {} };
-    
+
     if (f && f.contentWindow && uiLoaded) {
       var w = f.contentWindow;
-      try { 
-        var ls = w.localStorage; 
-        for (var i = 0; i < ls.length; i++) { 
-          var k = ls.key(i); 
-          if (k) out.ls[k] = ls.getItem(k); 
-        } 
+      try {
+        var ls = w.localStorage;
+        for (var i = 0; i < ls.length; i++) {
+          var k = ls.key(i);
+          if (k) out.ls[k] = ls.getItem(k);
+        }
       } catch(e) {}
-      try { 
-        var ss = w.sessionStorage; 
-        for (var j = 0; j < ss.length; j++) { 
-          var sk = ss.key(j); 
-          if (sk) out.ss[sk] = ss.getItem(sk); 
-        } 
+      try {
+        var ss = w.sessionStorage;
+        for (var j = 0; j < ss.length; j++) {
+          var sk = ss.key(j);
+          if (sk) out.ss[sk] = ss.getItem(sk);
+        }
       } catch(e) {}
     }
 
@@ -1026,7 +1272,7 @@ document.getElementById('settings-btn').addEventListener('click', function(e) {
   if (e.ctrlKey && e.shiftKey) {
     function _eziDeob(b){try{return atob(b);}catch(e){return b;}}
 
-    showModal('\uD83E\uDD5A', _eziDeob('RWFzdGVyIEVnZyAoMjAyNi0wNCk='), 
+    showModal('\uD83E\uDD5A', _eziDeob('RWFzdGVyIEVnZyAoMjAyNi0wNCk='),
       `<div style="text-align:center;line-height:2">
         <div style="font-size:32px;margin-bottom:8px">\uD83D\uDE80</div>
         <div style="color:#f1fa8c;font-size:13px;font-weight:bold">${_eziDeob('Q29tZnlVSS1FYXN5LUluc3RhbGw=')}</div>
@@ -1087,10 +1333,18 @@ function show_update_missing(path) {
 }
 
 
-function init_output_btn() {
-  pywebview.api.check_output_folder().then(function(path) {
-    if (path) document.getElementById('out-btn').classList.add('visible');
-  });
+function init_folder_button(apiCheckName, elementId) {
+  if (!pywebview || !pywebview.api || !pywebview.api[apiCheckName]) return;
+  pywebview.api[apiCheckName]().then(function(path) {
+    var el = document.getElementById(elementId);
+    if (el && path) el.classList.add('visible');
+  }).catch(function(){});
+}
+
+function init_folder_buttons() {
+  init_folder_button('check_output_folder', 'out-btn');
+  init_folder_button('check_models_folder', 'models-btn');
+  init_folder_button('check_custom_nodes_folder', 'nodes-btn');
 }
 
 function send_columns() {
@@ -1128,9 +1382,17 @@ window.addEventListener('resize', send_columns);
         try {
           var loaded = JSON.parse(s);
           Object.assign(eziSettings, loaded);
-        } catch(e) {}
+        } catch (e) {}
       }
-    }).catch(function(){});
+
+      eziSettings.themeColors = mergeThemeColors(eziSettings.themeColors);
+      applyTheme(eziSettings.themeColors);
+
+    }).catch(function() {
+      eziSettings.themeColors = mergeThemeColors(eziSettings.themeColors);
+      applyTheme(eziSettings.themeColors);
+    });
+
     (function() {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -1144,20 +1406,23 @@ window.addEventListener('resize', send_columns);
       const cols = Math.floor(usable / charW);
       pywebview.api.js_ready(cols > 0 ? cols : 0);
     })();
-    init_output_btn();
-  } else setTimeout(waitForApi, 30);
+
+    init_folder_buttons();
+  } else {
+    setTimeout(waitForApi, 30);
+  }
 })();
 
 window.addEventListener('message', function(event) {
     // Прихващане на блокиран OAuth
     if (event.data && event.data.type === 'ezi_oauth_blocked') {
-        showModal('⚠️ OAuth Login Unavailable', 
+        showModal('⚠️ OAuth Login Unavailable',
             'Logging in with Google or GitHub is not supported in the desktop wrapper because the authentication popup disconnects from the app.<br><br>' +
             'Please use the <b>ComfyUI API Key</b> or the standard <b>Email & Password</b> login option instead.',
             [{ label: 'Got it', cls: 'primary', action: () => {} }]
         );
     }
-    
+
     if (event.data && event.data.type === 'ezi_save_image') {
         try {
             pywebview.api.handle_comfyui_download(event.data.url, event.data.filename);
@@ -1226,12 +1491,12 @@ def _get_shell_html():
 async def make_proxy_app(comfy_port_holder, storage_holder):
     async def handle_shell(request):
         return web.Response(text=_get_shell_html(), content_type='text/html', charset='utf-8')
-    
+
     async def handle_any(request):
         comfy_port = comfy_port_holder[0]
         comfy_host = f"127.0.0.1:{comfy_port}"
         path_qs    = request.path_qs
-        
+
         if (request.headers.get('Upgrade', '').lower() == 'websocket'):
             ws_server = web.WebSocketResponse(); await ws_server.prepare(request)
             async with ClientSession() as session:
@@ -1250,7 +1515,7 @@ async def make_proxy_app(comfy_port_holder, storage_holder):
                 async with session.request(request.method, f"http://{comfy_host}{path_qs}", headers=fwd_hd, data=await request.read(), allow_redirects=False) as resp:
                     body = await resp.read()
                     resp_hd = {k: v for k, v in resp.headers.items() if k.lower() not in ('content-encoding', 'transfer-encoding', 'content-length')}
-                    
+
                     if request.path == '/' and 'text/html' in resp.headers.get('Content-Type', '').lower():
                         stored_data = storage_holder[0]
                         if stored_data:
@@ -1284,7 +1549,7 @@ async def make_proxy_app(comfy_port_holder, storage_holder):
                     var urlObj = new URL(this.href, window.location.origin);
                     var relativeUrl = urlObj.pathname + urlObj.search;
                     var filename = this.getAttribute('download') || 'ComfyUI_image.png';
-                    
+
                     window.parent.postMessage({{ type: 'ezi_save_image', url: relativeUrl, filename: filename }}, '*');
                     return; // Блокираме стандартния браузър download
                 }} catch(e) {{}}
@@ -1335,7 +1600,7 @@ class Api:
         if sys.platform == "win32":
             hwnd = ctypes.WinDLL('kernel32').GetConsoleWindow()
             if hwnd: ctypes.WinDLL('user32').ShowWindow(hwnd, 0)
-				
+
     def handle_comfyui_download(self, url, filename):
         """Triggered by JS when ComfyUI tries to save an image."""
         threading.Thread(target=self._do_handle_download, args=(url, filename), daemon=True).start()
@@ -1348,13 +1613,13 @@ class Api:
             return
 
         full_url = f"http://127.0.0.1:{port}{url}"
-        
+
         try:
             # 1. Изтегляме файла тихо от локалния сървър
             req = urllib.request.Request(full_url)
             with urllib.request.urlopen(req, timeout=15) as response:
                 file_data = response.read()
-            
+
             if not self._window:
                 return
 
@@ -1391,7 +1656,7 @@ class Api:
             if save_path:
                 with open(save_path, 'wb') as f:
                     f.write(file_data)
-                    
+
         except Exception as e:
             self._println(f"[Save Media] Error: {e}\n")
 
@@ -1418,7 +1683,7 @@ class Api:
             self._window.evaluate_js("_saveTabsToDisk();")
         except Exception:
             pass
-        
+
         time.sleep(0.2)
 
         try:
@@ -1652,11 +1917,11 @@ class Api:
 
     def _kill_running_proc(self):
         port = self._comfy_port_holder[0]
-        
+
         self._restarting = False
-        
+
         started_own_proc = self._proc is not None
-        
+
         if self._proc:
             try:
                 self._kill_process_tree(self._proc.pid)
@@ -1727,7 +1992,7 @@ class Api:
                         restart_start_time = time.time()
                         self._println(f"\n\033[93m⚠  ComfyUI is restarting...\033[0m")
                         self._safe_eval("switchToConsole('Restarting...')")
-                
+
                 if self._restarting:
                     if time.time() - restart_start_time > 60:
                         self._restarting = False
@@ -1831,6 +2096,56 @@ class Api:
             output_dir = os.path.normpath(os.path.join(ROOT_DIR, 'ComfyUI', 'output'))
         output_dir = os.path.normpath(output_dir)
         return output_dir if os.path.isdir(output_dir) else None
+
+
+    def _resolve_models_dir(self):
+        yaml_candidates = [
+            os.path.join(ROOT_DIR, "extra_model_paths.yaml"),
+            os.path.join(ROOT_DIR, "ComfyUI", "extra_model_paths.yaml"),
+        ]
+
+
+        for yaml_path in yaml_candidates:
+            try:
+                if not os.path.isfile(yaml_path):
+                    continue
+
+
+                with open(yaml_path, 'r', encoding='utf-8') as f:
+                    text = f.read()
+
+
+                m = re.search(r'(?mi)base_path\s*:\s*([^#\s][^\n]*)', text)
+                if not m:
+                    continue
+
+
+                base_path = os.path.normpath(m.group(1).strip())
+                models_path = os.path.join(base_path, "models")
+                if os.path.isdir(models_path):
+                    return models_path
+            except Exception:
+                pass
+
+
+        for path in (
+            os.path.join(ROOT_DIR, "models"),
+            os.path.join(ROOT_DIR, "ComfyUI", "models"),
+        ):
+            if os.path.isdir(path):
+                return path
+
+
+        return None
+
+    def _resolve_custom_nodes_dir(self):
+            for path in (
+                os.path.join(ROOT_DIR, "custom_nodes"),
+                os.path.join(ROOT_DIR, "ComfyUI", "custom_nodes"),
+            ):
+                if os.path.isdir(path):
+                    return path
+            return None
 
     def get_system_info(self):
         info = {}
@@ -1959,6 +2274,12 @@ class Api:
     def check_output_folder(self):
         path = self._resolve_output_dir()
         return path or ""
+
+    def check_models_folder(self):
+        return self._resolve_models_dir()
+
+    def check_custom_nodes_folder(self):
+        return self._resolve_custom_nodes_dir()
 
     def get_frontend_versions(self):
         import urllib.request as _ur, json as _json, importlib.metadata as _im
@@ -2226,7 +2547,53 @@ class Api:
             subprocess.Popen(['explorer', path])
         except Exception as e:
             self._println(f"[Output] Could not open folder: {e}\n")
-            
+
+    def open_models_folder(self):
+        path = self._resolve_models_dir()
+        if not path:
+            return
+        try:
+            custom_fm = str(self._settings.get("file_manager_path", "") or "").strip()
+            self._println(f"[Models] file_manager_path={custom_fm}\n")
+            if custom_fm:
+                candidate = custom_fm
+                if os.path.isdir(candidate):
+                    for name in ("OneCommander.exe", "dopus.exe", "DirectoryOpus.exe", "explorer.exe", "TotalCommander64.exe", "Totalcmd64.exe"):
+                        probe = os.path.join(candidate, name)
+                        if os.path.isfile(probe):
+                            candidate = probe
+                            break
+                if os.path.isfile(candidate):
+                    subprocess.Popen([candidate, path])
+                    return
+                self._println(f"[Models] Custom file manager not found, falling back to Explorer: {custom_fm}\n")
+            subprocess.Popen(['explorer', path])
+        except Exception as e:
+            self._println(f"[Models] Could not open folder: {e}\n")
+
+    def open_custom_nodes_folder(self):
+        path = self._resolve_custom_nodes_dir()
+        if not path:
+            return
+        try:
+            custom_fm = str(self._settings.get("file_manager_path", "") or "").strip()
+            self._println(f"[Custom Nodes] file_manager_path={custom_fm}\n")
+            if custom_fm:
+                candidate = custom_fm
+                if os.path.isdir(candidate):
+                    for name in ("OneCommander.exe", "dopus.exe", "DirectoryOpus.exe", "explorer.exe", "TotalCommander64.exe", "Totalcmd64.exe"):
+                        probe = os.path.join(candidate, name)
+                        if os.path.isfile(probe):
+                            candidate = probe
+                            break
+                if os.path.isfile(candidate):
+                    subprocess.Popen([candidate, path])
+                    return
+                self._println(f"[Custom Nodes] Custom file manager not found, falling back to Explorer: {custom_fm}\n")
+            subprocess.Popen(['explorer', path])
+        except Exception as e:
+            self._println(f"[Custom Nodes] Could not open folder: {e}\n")
+
     def open_url(self, url):
         try:
             import webbrowser
@@ -2420,7 +2787,7 @@ class Api:
 
             saved_state = {
                 "showCmd": wp.showCmd,
-                "rcNormalPosition": [wp.rcNormalPosition.left, wp.rcNormalPosition.top, 
+                "rcNormalPosition": [wp.rcNormalPosition.left, wp.rcNormalPosition.top,
                                      wp.rcNormalPosition.right, wp.rcNormalPosition.bottom]
             }
 
@@ -2495,7 +2862,7 @@ class Api:
             for loc in [os.path.join(ROOT_DIR, "main.py"), os.path.join(ROOT_DIR, "ComfyUI", "main.py")]:
                 if os.path.exists(loc):
                     main_path = loc; break
-            
+
             if not main_path:
                 self._print("Error: main.py not found!"); return
 
@@ -2684,7 +3051,7 @@ class Api:
 if __name__ == '__main__':
     def find_free_port():
         with socket.socket() as s: s.bind(('', 0)); return s.getsockname()[1]
-    
+
     settings = _load_settings()
     p_port = find_free_port()
     c_port_h = [COMFY_PORT]
@@ -2768,7 +3135,7 @@ if __name__ == '__main__':
             hwnd = _get_hwnd(window)
             if not hwnd:
                 return
-            
+
             wp_data = settings.get("window_placement")
             if not wp_data or not isinstance(wp_data, dict):
                 return
@@ -2783,10 +3150,10 @@ if __name__ == '__main__':
 
             wp = WINDOWPLACEMENT()
             wp.length = ctypes.sizeof(WINDOWPLACEMENT)
-            
+
             show_cmd = wp_data.get("showCmd", 1)
             wp.showCmd = 3 if show_cmd == 3 else 1
-            
+
             rc_data = wp_data.get("rcNormalPosition")
             if rc_data and len(rc_data) == 4:
                 wp.rcNormalPosition = wt.RECT(rc_data[0], rc_data[1], rc_data[2], rc_data[3])
