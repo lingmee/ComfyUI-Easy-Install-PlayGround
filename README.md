@@ -318,7 +318,7 @@ Run ComfyUI in a native desktop window instead of a browser:
 
 | ⌨️ Action | 🍎 macOS | 🐧 Linux |
 |---|---|---|
-| Open Desktop Settings panel | `Cmd+Shift+I` | `Ctrl+Shift+I` |
+| Open Desktop Settings panel | `Cmd+Shift+U` | `Ctrl+Shift+U` |
 | Open ComfyUI in browser | `Cmd+B` | `Ctrl+B` |
 
 > [!NOTE]
